@@ -28,5 +28,5 @@ python download_landsat.py --city_name="kampala" --data_path="/Users/JoeBloggs/w
 ```
 
 Code heavily inspired by:
-1. https://github.com/yannforget/builtup-classification-osm/tree/master/notebooks
+1. https://github.com/yannforget/builtup-classification-osm/
 2. https://github.com/sustainlab-group/africa_poverty
