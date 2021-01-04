@@ -4,7 +4,7 @@ Here are some tips to get up and running.
 
 ```
 # Clone the repository
-git clone https://github.com/yannforget/builtup-classification-osm.git
+git clone git@github.com:p4tr1ckc4rs0n/landsat-city.git
 cd landsat-city
 
 # Create the Python environment
