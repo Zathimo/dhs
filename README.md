@@ -17,7 +17,7 @@ source activate landsat-city
 source deacivate landsat-city
 ```
 
-Downloading landsat satellite images for a city.
+Downloading landsat satellite image for a city.
 
 ```
 source activate landsat-city
