@@ -1,4 +1,4 @@
-Welcome to the **landsat-city** project. This is a `python3` project.
+Welcome to the **landsat-city** project. This is a `python3` and `Conda` project.
 
 Here are some tips to get up and running.
 
@@ -17,7 +17,7 @@ source activate landsat-city
 source deacivate landsat-city
 ```
 
-Downloading landsat satellite image for a city.
+Downloading landsat 8 satellite image for a city.
 
 ```
 source activate landsat-city
