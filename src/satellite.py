@@ -154,9 +154,9 @@ class Landsat:
         }
         task = ee.batch.Export.image.toDrive(self.stack, **task_config)
         task.start()
-        print(f'beginning download of landsat image for {self.city.name} image collection')
+        print(f'>beginning download of landsat image for {self.city.name}')
         while task.status()['state'] != 'COMPLETED':
-            print(f"task status: {task.status()['state']}")
+            print(f">>task status: {task.status()['state']}")
             time.sleep(3)
-        print(f"task status: {task.status()['state']}")
-        print(f'successfully downloaded data for {self.city.name}, check your Google Drive')
+        print(f">>task status: {task.status()['state']}")
+        print(f'>successfully downloaded data for {self.city.name}, check your Google Drive')
