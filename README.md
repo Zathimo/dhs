@@ -16,7 +16,7 @@ conda env create --file osx_environment.yml
 source activate landsat-city
 
 # Deacivate the environment
-source deacivate landsat-city
+source deactivate landsat-city
 ```
 
 Downloading landsat 8 satellite image for a city.
