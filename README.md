@@ -35,9 +35,9 @@ python download_landsat.py --city_name="kampala" --data_path="/Users/JoeBloggs/w
 
 # Motivation
 
-Having time a series of regular and consistent observations of built settlement extents is important given that forecasted growth of populations within dense urban areas are expected to continue through 2050, with much of that increase will occur within Africa and Asia (Angel, Sheppard, & Civco, 2005; United Nations, 2015b). Rapidly changing magnitudes and distributions of both built-settlements and populations have significant implications for sustainability (Cohen, 2006), climate change (McGranahan, Balk, & Anderson, 2007; Stephenson, Newman, & Mayhew, 2010), and public health (Chongsuvivatwong et al., 2011; Dhingra et al., 2016). 
+Having time a series of regular and consistent observations of built settlement extents is important given that forecasted growth of populations within dense urban areas are expected to continue through 2050, with much of that increase will occur within Africa and Asia. Rapidly changing magnitudes and distributions of both built-settlements and populations have significant implications for sustainability, climate change, and public health. 
 
-The 2030 Agenda for Sustainable Development, which have a focus on accounting for and including “all people everywhere”, reinforced the need for readily and globally available baseline data to guide efforts and measure progress toward its Sustainable Development Goals (SDGs) (United Nations, 2016).
+The 2030 Agenda for Sustainable Development, which have a focus on accounting for and including “all people everywhere”, reinforced the need for readily and globally available baseline data to guide efforts and measure progress toward its Sustainable Development Goals (SDGs).
 
 Code heavily inspired by:
 1. https://github.com/yannforget/builtup-classification-osm/
