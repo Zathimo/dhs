@@ -1,5 +1,7 @@
 Welcome to the **landsat-city** project. This is a `python3` and `Conda` project.
 
+You'll need a Google Earth Engine account.
+
 Here are some tips to get up and running.
 
 ```
