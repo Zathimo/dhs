@@ -35,7 +35,7 @@ python download_landsat.py --city_name="kampala" --data_path="/Users/JoeBloggs/w
 
 # Working with Output
 
-Download the image.tif file from your Google Drive.
+Download the image.tif file from your Google Drive, load and view it with `rasterio`.
 
 ```
 import rasterio as rio
