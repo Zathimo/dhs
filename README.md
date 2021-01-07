@@ -35,17 +35,17 @@ python download_landsat.py --city_name="kampala" --data_path="/Users/JoeBloggs/w
 
 # Working with Output
 
-Download the image.tif file from your Google Drive
+Download the image.tif file from your Google Drive.
 
 ```
 import rasterio as rio
 from rasterio.plot import show
 import matplotlib.pylab as plt
 
-kampala_scene = rio.open('/path/to/image.tif')
+city_scene = rio.open('/path/to/image.tif')
 
 fig, ax = plt.subplots(1, figsize=(18,18))
-show(kampala_scene.read(1))
+show(city_scene.read(1))
 plt.show()
 ```
 
