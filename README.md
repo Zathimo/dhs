@@ -33,6 +33,22 @@ cd landsat-city
 python download_landsat.py --city_name="kampala" --data_path="/Users/JoeBloggs/workspace/landsat-city/data/" --start_date="2020-01-01" --end_date="2020-05-01"
 ```
 
+# Working with Output
+
+Download the image.tif file from your Google Drive
+
+```
+import rasterio as rio
+from rasterio.plot import show
+import matplotlib.pylab as plt
+
+kampala_scene = rio.open('/path/to/image.tif')
+
+fig, ax = plt.subplots(1, figsize=(18,18))
+show(kampala_scene.read(1))
+plt.show()
+```
+
 # Motivation
 
 Having time a series of regular and consistent observations of built settlement extents is important given that forecasted growth of populations within dense urban areas are expected to continue through 2050, with much of that increase will occur within Africa and Asia. Rapidly changing magnitudes and distributions of both built-settlements and populations have significant implications for sustainability, climate change, and public health. 
