@@ -14,16 +14,6 @@ class GoogleEarthEngineDownloadError(Exception):
         return f'gee>> download failed! message: {self.error_message}'
 
 
-def reproject_geom(geom, src_epsg, dst_epsg):
-    """Re-project a shapely geometry given a source EPSG and a
-    target EPSG.
-    """
-    src_proj = pyproj.Proj(init='epsg:{}'.format(src_epsg))
-    dst_proj = pyproj.Proj(init='epsg:{}'.format(dst_epsg))
-    reproj = partial(pyproj.transform, src_proj, dst_proj)
-    return transform(reproj, geom)
-
-
 def area_of_interest(lat, lon, km):
     proj_wgs84 = pyproj.Proj('+proj=longlat +datum=WGS84')
     aeqd_proj = '+proj=aeqd +lat_0={lat} +lon_0={lon} +x_0=0 +y_0=0'
@@ -34,4 +24,4 @@ def area_of_interest(lat, lon, km):
     buf = Point(0, 0).buffer(km * 1000)
     aoi = transform(project, buf).exterior.envelope
     xmin, ymin, xmax, ymax = [round(coord, 3) for coord in aoi.bounds]
-    return xmin, ymin, xmax, ymax
+    return [xmin, ymin, xmax, ymax]
