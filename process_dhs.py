@@ -12,6 +12,7 @@ parser.add_argument('--dhs_gps', dest='dhs_gps', action='store',
 
 args = parser.parse_args()
 
+# process DHS survey file, extract median wealth index for each cluster
 df_wealth = pd.read_stata(args.dhs_survey)
 df_wealth = (df_wealth[['hv001', 'hv271']]
              .rename(columns={'hv001': 'cluster_id',
@@ -21,10 +22,14 @@ df_wealth = (df_wealth[['hv001', 'hv271']]
 df_wealth['wealth_index'] = df_wealth['wealth_index'] / 100000.0
 df_cluster_wealth = df_wealth.groupby('cluster_id').median().reset_index()
 
+# process DHS shapefile, extract cluster long, lat
 df_geo = (gpd.read_file(args.dhs_gps)[['DHSCLUST', 'LATNUM', 'LONGNUM']]
           .rename(columns={'DHSCLUST': 'cluster_id',
                            'LATNUM': 'latitude',
                            'LONGNUM': 'longitude'}))
+
+# merge cluster wealth index and location information
+# calculate area of interest coordinates
 output = pd.merge(df_cluster_wealth, df_geo, on='cluster_id', how='inner')
 output['area_of_interest'] = output.apply(lambda x: area_of_interest(x['latitude'], x['longitude'], 5), axis=1)
-output.to_csv('/Users/Patrick/workspace/landsat-city/data/rwanda_2014_15/dhs/rwanda_cluster_wealth.csv', index=False)
+output.to_csv('./data/rwanda_2014_15/dhs/rwanda_cluster_wealth.csv', index=False)
