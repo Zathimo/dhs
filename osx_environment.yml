@@ -64,5 +64,3 @@ dependencies:
     - snuggs==1.4.7
     - uritemplate==3.0.1
     - urllib3==1.26.2
-prefix: /Users/Patrick/miniconda/envs/landsat-city
-
