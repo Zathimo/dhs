@@ -1,3 +1,5 @@
+**WORK IN PROGRESS** readme is currently outdatad
+
 Welcome to the **landsat-city** project. This is a `python3` and `Conda` project.
 
 # Getting started
