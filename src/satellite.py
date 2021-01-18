@@ -2,16 +2,20 @@ import time
 
 import ee
 
+from src.utils import GoogleEarthEngineDownloadError
+
 ee.Initialize()
 
 
 class Landsat:
-    def __init__(self, aoi_coords, start_date, end_date):
+    def __init__(self, country, aoi_coords, start_date, end_date):
         """
         Constructor.
 
         Parameters
         ----------
+        :param aoi_coords: list
+            name of country to download satellite data for
         :param aoi_coords: list
             coordinates for area of interest; [xmin, ymin, xmax, ymax]
         :param start_date: str
@@ -19,12 +23,17 @@ class Landsat:
         :param end_date: str
             end date for filtering a collection by a date range
         """
+        self.country = country
         self.aoi_coords = aoi_coords
         self.start_date = start_date
         self.end_date = end_date
         self.rect = ee.Geometry.Rectangle(self.aoi_coords)
         self.coords_json = self.rect.getInfo()['coordinates']
         self.ms_bands = ['BLUE', 'GREEN', 'RED', 'NIR', 'SWIR1', 'SWIR2', 'TEMP1', 'TEMP2']
+        self.done_status = {ee.batch.Task.State.COMPLETED,
+                            ee.batch.Task.State.FAILED,
+                            ee.batch.Task.State.CANCEL_REQUESTED,
+                            ee.batch.Task.State.CANCELLED}
 
     @staticmethod
     def add_latlon(image):
@@ -132,7 +141,7 @@ class Landsat:
 
     @property
     def composite_nl(self):
-        """Creates a median-composite nightlights (NL) image."""
+        """Creates a median-composite nightlights ee.Image."""
 
         return (ee.ImageCollection('NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG')
                 .filterDate(self.start_date, self.end_date)
@@ -165,24 +174,23 @@ class Landsat:
         ms_stack = ms_stack.addBands(self.composite_nl).toFloat()
         return ms_stack
 
-    def export_image(self):
+    def export_image(self, cluster_id):
         """
-        Creates a batch task to export an Image as a raster to Google Drive.
+        Creates a batch task to export an ee.Image as a raster to Google Drive.
         """
         task_config = {
-            'description': f'xxx_{self.start_date}_{self.end_date}',
+            'description': f'{self.country}_{self.start_date}_{self.end_date}_{cluster_id}',
             'scale': 30,
-            'folder': 'rwanda',
+            'folder': self.country,
             'region': self.coords_json
         }
         task = ee.batch.Export.image.toDrive(self.image, **task_config)
         task.start()
-        print(f'>beginning download of landsat image for xxx')
+        print(f'>beginning download of landsat image for {self.country} cluster: {cluster_id}')
         while task.status()['state'] != 'COMPLETED':
             print(f">>task status: {task.status()['state']}")
             if task.status()['state'] == 'FAILED':
-                print(task.status())
-                break
+                raise GoogleEarthEngineDownloadError(task.status()['error_message'])
             time.sleep(3)
         print(f">>task status: {task.status()['state']}")
-        print(f'>successfully downloaded data for xxx, check your Google Drive')
+        print(f'>successfully downloaded data for {self.country} cluster: {cluster_id}, check your Google Drive')
