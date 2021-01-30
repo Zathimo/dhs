@@ -1,6 +1,4 @@
-**WORK IN PROGRESS** readme is currently outdatad
-
-Welcome to the **landsat-city** project. This is a `python3` and `Conda` project.
+Welcome to the **dhs-landsat-download** project. This is a `python3` and `Conda` project.
 
 # Getting started
 
@@ -11,28 +9,39 @@ Here are some tips to get up and running.
 ```
 # Clone the repository
 git clone https://github.com/p4tr1ckc4rs0n/landsat-city.git
-cd landsat-city
+cd dhs-landsat-download
 
 # Create the Python environment
 conda env create --file osx_environment.yml
 
 # Activate the environment
-source activate landsat-city
+source activate dhs-landsat-download
 
 # Deacivate the environment
-source deactivate landsat-city
+source deactivate dhs-landsat-download
 ```
 
-# Output
+# Process DHS data
+
+Demographic and Health Surveys (DHS) are nationally-representative household surveys that provide data for a wide range of monitoring and impact evaluation indicators in the areas of population, health, and nutrition. Access to the survey data requires registration [DHS Survey Dataset sign up](https://dhsprogram.com/data/dataset_admin/login_main.cfm?CFID=17027270&CFTOKEN=c4c188f84eaedb52-487F1EA8-E5D7-6CFA-5B97BD18ADC2BD5E).
+
+```
+cd  
+
+
+```
+
+# Download associated landsat images for each cluster. Save to Google Drive
 
 Downloading landsat 8 satellite image for a city to your Google Drive.
 
 ```
-source activate landsat-city
+source activate dhs-landsat-download
 
-cd landsat-city
+cd dhs-landsat-download
 
-python download_landsat.py --city_name="kampala" --data_path="/Users/JoeBloggs/workspace/landsat-city/data/" --start_date="2020-01-01" --end_date="2020-05-01"
+download_landsat.py --country="burindi" --country_cluster="/Path/to/burindi_cluster_wealth.csv" --start_date="2016-01-01" --end_date="2017-12-31"
+
 ```
 
 # Working with Output
