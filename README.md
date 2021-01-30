@@ -51,10 +51,10 @@ import rasterio as rio
 from rasterio.plot import show
 import matplotlib.pylab as plt
 
-city_scene = rio.open('/path/to/image.tif')
+scene = rio.open('/path/to/image.tif')
 
 fig, ax = plt.subplots(1, figsize=(18,18))
-show(city_scene.read(1))
+show(scene.read(1))
 plt.show()
 ```
 
