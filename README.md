@@ -12,17 +12,17 @@ Here are some tips to get up and running.
 
 ```
 # Clone the repository
-git clone https://github.com/p4tr1ckc4rs0n/landsat-city.git
+git clone https://github.com/p4tr1ckc4rs0n/dhs-landsat-dowbload.git
 cd dhs-landsat-download
 
 # Create the Python environment
 conda env create --file osx_environment.yml
 
 # Activate the environment
-source activate dhs-landsat-download
+source activate dhs-landsat
 
 # Deacivate the environment
-source deactivate dhs-landsat-download
+source deactivate dhs-landsat
 ```
 
 # Process DHS data
