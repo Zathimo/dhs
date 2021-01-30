@@ -20,9 +20,6 @@ conda env create --file osx_environment.yml
 
 # Activate the environment
 source activate dhs-landsat
-
-# Deacivate the environment
-source deactivate dhs-landsat
 ```
 
 # Process DHS data
