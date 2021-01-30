@@ -31,7 +31,6 @@ Download the the DHS survey data, don't forget to request the GPS dataset too. R
 
 ```
 python process_dhs.py --country="burindi" --dhs_survey="/Path/to/BUHR71FL.DTA" --dhs_gps="/Path/to/BUGE71FL.shp
-
 ```
 
 Running this script should yield a `burindi_cluster_wealth.csv` file with the mean wealth index for each cluster and associated bounding box.
@@ -42,7 +41,6 @@ Downloading landsat 8 satellite images for each cluster.  Run the `download_land
 
 ```
 python download_landsat.py --country="burindi" --country_cluster="/Path/to/burindi_cluster_wealth.csv" --start_date="2016-01-01" --end_date="2017-12-31"
-
 ```
 
 Once this script is done running you should end up with 100s, sometimes 1000s of satellite images for each cluster saved in you goodle drive under`/<country>` the file name pertains to the country, start and end date of the satellite image composite and cluster id: `<country>_<start_date>_<end_date>_<cluster_id>.tif`.
@@ -64,8 +62,6 @@ plt.show()
 ```
 
 # Motivation
-
-Having time a series of regular and consistent observations of built settlement extents is important given that forecasted growth of populations within dense urban areas are expected to continue through 2050, with much of that increase will occur within Africa and Asia. Rapidly changing magnitudes and distributions of both built-settlements and populations have significant implications for sustainability, climate change, and public health. 
 
 The 2030 Agenda for Sustainable Development, which have a focus on accounting for and including “all people everywhere”, reinforced the need for readily and globally available baseline data to guide efforts and measure progress toward its Sustainable Development Goals (SDGs).
 
