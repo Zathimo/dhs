@@ -43,9 +43,9 @@ Downloading landsat 8 satellite images for each cluster.  Run the `download_land
 python download_landsat.py --country="burindi" --country_cluster="/Path/to/burindi_cluster_wealth.csv" --start_date="2016-01-01" --end_date="2017-12-31"
 ```
 
-Once this script is done running you should end up with 100s, sometimes 1000s of satellite images for each cluster saved in you goodle drive under`/<country>` the file name pertains to the country, start and end date of the satellite image composite and cluster id: `<country>_<start_date>_<end_date>_<cluster_id>.tif`.
+Once this script is done running you should end up with 100s, sometimes 1000s of satellite images, for each cluster saved in you goodle drive under`/<country>` the file name pertains to the country, start and end date of the satellite image composite and cluster id: `<country>_<start_date>_<end_date>_<cluster_id>.tif`.
 
-# Working with Output
+# Working with the satellite image output
 
 Download the image.tif file from your Google Drive, load and view it with `rasterio`.
 
