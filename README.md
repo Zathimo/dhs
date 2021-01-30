@@ -2,7 +2,7 @@ Welcome to the **dhs-landsat-download** project. This is a `python3` and `Conda`
 
 # Idea
 
-Demographic and Health Surveys (DHS) are nationally-representative household surveys that provide data for a wide range of monitoring and impact evaluation indicators in the areas of population, health, and nutrition. What if we could pair freely available satellite images with this survey data?
+Demographic and Health Surveys (DHS) are nationally-representative household surveys that provide data for a wide range of monitoring and impact evaluation indicators in the areas of population, health, and nutrition. What if we could pair freely available landsat 8 satellite images with this data?
 
 # Getting started
 
@@ -12,17 +12,17 @@ Here are some tips to get up and running.
 
 ```
 # Clone the repository
-git clone https://github.com/p4tr1ckc4rs0n/landsat-city.git
+git clone https://github.com/p4tr1ckc4rs0n/dhs-landsat-dowbload.git
 cd dhs-landsat-download
 
 # Create the Python environment
 conda env create --file osx_environment.yml
 
 # Activate the environment
-source activate dhs-landsat-download
+source activate dhs-landsat
 
 # Deacivate the environment
-source deactivate dhs-landsat-download
+source deactivate dhs-landsat
 ```
 
 # Process DHS data
