@@ -2,7 +2,7 @@ Welcome to the **dhs-landsat-download** project. This is a `python3` and `Conda`
 
 # Idea
 
-Demographic and Health Surveys (DHS) are nationally-representative household surveys that provide data for a wide range of monitoring and impact evaluation indicators in the areas of population, health, and nutrition. What if we could pair freely available satellite images with this survey data?
+Demographic and Health Surveys (DHS) are nationally-representative household surveys that provide data for a wide range of monitoring and impact evaluation indicators in the areas of population, health, and nutrition. What if we could pair freely available landsat 8 satellite images with this survey data?
 
 # Getting started
 
