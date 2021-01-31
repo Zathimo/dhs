@@ -27,7 +27,7 @@ def area_of_interest(lat, lon, km):
         pyproj.transform,
         pyproj.Proj(aeqd_proj.format(lat=lat, lon=lon)),
         proj_wgs84)
-    buf = Point(0, 0).buffer(km * 1000)
+    buf = Point(lat, lon).buffer(km * 1000)
     aoi = transform(project, buf).exterior.envelope
     xmin, ymin, xmax, ymax = [round(coord, 3) for coord in aoi.bounds]
     return [xmin, ymin, xmax, ymax]
