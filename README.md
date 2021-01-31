@@ -12,7 +12,7 @@ Here are some tips to get up and running.
 
 ```
 # Clone the repository
-git clone https://github.com/p4tr1ckc4rs0n/dhs-landsat-dowbload.git
+git clone https://github.com/p4tr1ckc4rs0n/dhs-landsat-download.git
 cd dhs-landsat-download
 
 # Create the Python environment
