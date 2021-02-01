@@ -24,7 +24,7 @@ source activate dhs-landsat
 
 # Process DHS data
 
-Download the DHS survey data, don't forget to request the GPS dataset too. Run the `process_dhs.py` script to extract the wealth index for each cluster and generate a 10x10km bounding box around each clusters latitiude and longitude.
+Download the DHS survey data, don't forget to request the GPS dataset too. Run the `process_dhs.py` script to extract the wealth index for each cluster and generate a 10x10km bounding box around each clusters latitude and longitude.
 
 ```
 python process_dhs.py --country="burindi" --dhs_survey="/Path/to/BUHR71FL.DTA" --dhs_gps="/Path/to/BUGE71FL.shp
@@ -40,7 +40,7 @@ Downloading landsat 8 satellite images for each cluster.  Run the `download_land
 python download_landsat.py --country="burindi" --country_cluster="/Path/to/burindi_cluster_wealth.csv" --start_date="2016-01-01" --end_date="2017-12-31"
 ```
 
-Once this script is done running you should end up with 100s, sometimes 1000s of satellite images, for each cluster saved in you goodle drive under`/<country>` the file name pertains to the country, start and end date of the satellite image composite and cluster id: `<country>_<start_date>_<end_date>_<cluster_id>.tif`.
+Once this script is done running you should end up with 100s, sometimes 1000s of satellite images for each cluster saved in you google drive under`/<country>` the file name pertains to the country, start and end date of the satellite image composite and cluster id: `<country>_<start_date>_<end_date>_<cluster_id>.tif`.
 
 # Working with the satellite image output
 
