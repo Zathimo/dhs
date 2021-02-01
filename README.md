@@ -1,5 +1,9 @@
 Welcome to the **dhs-landsat-download** project. This is a `python3` and `Conda` project.
 
+# Motivation
+
+The 2030 Agenda for Sustainable Development, which have a focus on accounting for and including “all people everywhere”, reinforced the need for readily and globally available baseline data to guide efforts and measure progress toward its Sustainable Development Goals (SDGs).
+
 # Idea
 
 Demographic and Health Surveys (DHS) are nationally-representative household surveys that provide data for a wide range of monitoring and impact evaluation indicators in the areas of population, health, and nutrition. What if we could pair freely available landsat 8 satellite images with this data for further investigation?
@@ -57,10 +61,6 @@ fig, ax = plt.subplots(1, figsize=(18,18))
 show(scene.read(1))
 plt.show()
 ```
-
-# Motivation
-
-The 2030 Agenda for Sustainable Development, which have a focus on accounting for and including “all people everywhere”, reinforced the need for readily and globally available baseline data to guide efforts and measure progress toward its Sustainable Development Goals (SDGs).
 
 Code heavily inspired by:
 1. https://github.com/yannforget/builtup-classification-osm/
