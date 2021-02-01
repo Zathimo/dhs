@@ -24,7 +24,7 @@ source activate dhs-landsat
 
 # Process DHS data
 
-Download the DHS survey data, don't forget to request the GPS dataset too. Run the `process_dhs.py` script to extract the wealth index for each cluster and generate a 10x10km bounding box around each cluster latitiude and longitude.
+Download the DHS survey data, don't forget to request the GPS dataset too. Run the `process_dhs.py` script to extract the wealth index for each cluster and generate a 10x10km bounding box around each clusters latitiude and longitude.
 
 ```
 python process_dhs.py --country="burindi" --dhs_survey="/Path/to/BUHR71FL.DTA" --dhs_gps="/Path/to/BUGE71FL.shp
