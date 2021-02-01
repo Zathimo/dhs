@@ -20,6 +20,8 @@ parser.add_argument('--dhs_survey', dest='dhs_survey', action='store',
                     help='absolute path to dhs survey file')
 parser.add_argument('--dhs_gps', dest='dhs_gps', action='store',
                     help='absolute path to dhs gps file')
+parser.add_argument('--buffer', dest='buffer', action='store',
+                    help='size of buffer zone in km')
 
 args = parser.parse_args()
 country = args.country
@@ -48,7 +50,9 @@ df_geo = (gpd.read_file(args.dhs_gps)[['DHSCLUST', 'LATNUM', 'LONGNUM']]
 # merge cluster wealth index and location information
 # calculate area of interest coordinates
 output = pd.merge(df_cluster_wealth, df_geo, on='cluster_id', how='inner')
-output['area_of_interest'] = output.apply(lambda x: area_of_interest(x['latitude'], x['longitude'], 5), axis=1)
+output['area_of_interest'] = output.apply(lambda x: area_of_interest(x['latitude'],
+                                                                     x['longitude'],
+                                                                     args.buffer), axis=1)
 print('generated bounding box area of interest around each cluster')
 
 output_dest = os.path.join(output_path, f'{args.country}_cluster_wealth.csv')
