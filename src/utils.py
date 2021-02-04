@@ -32,11 +32,16 @@ def area_of_interest(lat, lon, km):
     xmin, ymin, xmax, ymax = [round(coord, 3) for coord in aoi.bounds]
     return [xmin, ymin, xmax, ymax]
 
+def fill(arr):
+    """
+    Replace the value of invalid array cells - NaNs
+    by the value of the nearest valid array cell.
+    """
+    ind = nd.distance_transform_edt(np.isnan(arr), return_distances=False, return_indices=True)
+    return arr[tuple(ind)]
 
-def fill(data):
+def rescale(arr, axes=0):
     """
-    Replace the value of invalid 'data' cells - NaNs
-    by the value of the nearest valid data cell.
+    Scale input array to 0 - 255.
     """
-    ind = nd.distance_transform_edt(np.isnan(data), return_distances=False, return_indices=True)
-    return data[tuple(ind)]
+    return ((arr - arr.min()) * (1/(arr.max() - arr.min()) * 255)).astype('uint8')
