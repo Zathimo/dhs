@@ -21,5 +21,5 @@ df = pd.read_csv(args.country_cluster)
 df['area_of_interest'] = df['area_of_interest'].apply(ast.literal_eval)
 
 for row in df[['cluster_id', 'area_of_interest']].iterrows():
-    scene = Landsat(str(args.country), row[1]['area_of_interest'], args.start_date, args.end_date)
+    scene = Landsat(args.country, row[1]['area_of_interest'], args.start_date, args.end_date)
     scene.export_image(row[1]['cluster_id'])

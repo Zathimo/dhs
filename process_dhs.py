@@ -11,16 +11,16 @@ from src.utils import area_of_interest
 # from the .DTA file and merges it with the latitude and longitde of each 
 # cluster, found in the .shp file. An area of interest (10x10km) is then
 # generated from the coordinates of each cluster. This AOI will be used to
-# query GEE for accompanying satelite imagery.
+# query GEE for accompanying satellite imagery.
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--country', dest='country', action='store',
+parser.add_argument('--country', dest='country', action='store', type=str,
                     help='name of surveyed country')
-parser.add_argument('--dhs_survey', dest='dhs_survey', action='store',
+parser.add_argument('--dhs_survey', dest='dhs_survey', action='store', type=str,
                     help='absolute path to dhs survey file')
-parser.add_argument('--dhs_gps', dest='dhs_gps', action='store',
+parser.add_argument('--dhs_gps', dest='dhs_gps', action='store', type=str,
                     help='absolute path to dhs gps file')
-parser.add_argument('--buffer', dest='buffer', action='store',
+parser.add_argument('--buffer', dest='buffer', action='store', type=int,
                     help='size of buffer zone in km')
 
 args = parser.parse_args()
