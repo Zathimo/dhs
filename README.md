@@ -1,4 +1,4 @@
-Welcome to the **dhs-landsat-download** project. This is a `python3` and `Conda` project.
+Welcome to the **dhs-landsat-poverty-prediction** project. This is a `python3` and `Conda` project.
 
 # Motivation
 
@@ -16,7 +16,7 @@ Here are some tips to get up and running.
 
 ```
 # Clone the repository
-git clone https://github.com/p4tr1ckc4rs0n/dhs-landsat-download.git
+git clone https://github.com/p4tr1ckc4rs0n/dhs-landsat-poverty-prediction.git
 cd dhs-landsat-download
 
 # Create the Python environment
