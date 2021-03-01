@@ -1,4 +1,5 @@
 import os
+import glob
 from functools import partial
 
 import pyproj
@@ -56,12 +57,12 @@ def tif_to_rgb(input_dir, output_dir):
     """
     Convert .tif images to .rgb.
     """
-    for f_in in os.listdir(input_dir):
-        scene = fill(rio.open(os.path.join(input_dir, f_in)).read([3, 2, 1]))
+    for f_in in glob.glob(os.path.join(input_dir, '*')):
+        scene = fill(rio.open(f_in).read([3, 2, 1]))
         if np.isnan(scene).any():
             continue
         scene_shift = np.moveaxis(scene, 0, -1)
         scene_rescaled = np.apply_over_axes(rescale, scene_shift, axes=-1)
         img = Image.fromarray(scene_rescaled)
-        f_out = f"{f_in.split('.')[0]}.jpeg"
+        f_out = f"{f_in.split('/')[-1].split('.')[0]}.jpeg"
         img.save(os.path.join(output_dir, f_out))

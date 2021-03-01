@@ -6,9 +6,9 @@ import geopandas as gpd
 
 from src.utils import area_of_interest
 
-# this script takes correpsonding DHS survey .DTA and .shp files as input.
+# this script takes corresponding DHS survey .DTA and .shp files as input.
 # It selects out the cluster id and associated wealth index information 
-# from the .DTA file and merges it with the latitude and longitde of each 
+# from the .DTA file and merges it with the latitude and longitude of each
 # cluster, found in the .shp file. An area of interest (10x10km) is then
 # generated from the coordinates of each cluster. This AOI will be used to
 # query GEE for accompanying satellite imagery.
@@ -38,7 +38,6 @@ df_wealth = (df_wealth[['hv001', 'hv270', 'hv271']]
                               'hv271': 'wealth_index'})
              .dropna())
 df_wealth['wealth_index'] = df_wealth['wealth_index'] / 100000.0
-df_cluster_wealth = df_wealth.groupby('cluster_id').mean().reset_index()
 print('extracted and calculated mean wealth index for each cluster')
 
 # process DHS shapefile, extract cluster long, lat
@@ -49,12 +48,13 @@ df_geo = (gpd.read_file(args.dhs_gps)[['DHSCLUST', 'LATNUM', 'LONGNUM']]
 
 # merge cluster wealth index and location information
 # calculate area of interest coordinates
-output = pd.merge(df_cluster_wealth, df_geo, on='cluster_id', how='inner')
+output = pd.merge(df_wealth, df_geo, on='cluster_id', how='inner')
 output['area_of_interest'] = output.apply(lambda x: area_of_interest(x['latitude'],
                                                                      x['longitude'],
-                                                                     args.buffer), axis=1)
+                                                                     args.buffer),
+                                          axis=1)
 print('generated bounding box area of interest around each cluster')
 
-output_dest = os.path.join(output_path, f'{args.country}_cluster_wealth.csv')
+output_dest = os.path.join(output_path, f'raw_{args.country}_cluster_wealth_.csv')
 output.to_csv(output_dest, index=False)
 print('successfully processed DHS information')
