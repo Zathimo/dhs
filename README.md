@@ -36,9 +36,9 @@ python process_dhs.py --country="burindi" --dhs_survey="/Path/to/BUHR71FL.DTA" -
 
 Running this script should yield a `burindi_cluster_wealth.csv` file with the mean wealth index for each cluster and associated bounding box.
 
-# Download associated landsat images for each cluster. Save to Google Drive
+# Landsat 8 images for each cluster. Saved to Google Drive
 
-Downloading landsat 8 satellite images for each cluster.  Run the `download_landsat.py` scipt to download 10x10km daylight and nightlight images for each cluster in the DHS survey. This may take a long time depending on how many clusters exist in the survey. Make sure the `start_date` and `end_date` match the years in which the DHS survey was conducted.
+Run the `download_landsat.py` scipt to download 10x10km daylight and nightlight images for each cluster in the DHS survey. This may take a long time depending on how many clusters exist in the survey. Make sure the `start_date` and `end_date` match the years in which the DHS survey was conducted.
 
 ```
 python download_landsat.py --country="burindi" --country_cluster="/Path/to/burindi_cluster_wealth.csv" --start_date="2016-01-01" --end_date="2017-12-31"
