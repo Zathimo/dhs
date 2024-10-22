@@ -4,7 +4,11 @@ import ee
 
 from src.utils import GoogleEarthEngineDownloadError
 
-ee.Initialize()
+try:
+    ee.Initialize()
+except Exception as e:
+    ee.Authenticate()
+    ee.Initialize()
 
 
 class Landsat:
