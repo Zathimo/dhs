@@ -5,10 +5,19 @@ from pystac_client.stac_api_io import StacApiIO
 import pandas as pd
 
 from urllib3 import Retry
+from urllib.parse import urlparse
 
 from torchgeo.datasets.utils import download_url
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
+import scipy.stats
+
+import rasterio
+from rasterio import windows
+from rasterio import warp
+
+import numpy as np
+from PIL import Image
 
 import os
 
@@ -16,24 +25,26 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
 def main():
-    csv = pd.read_csv('../data/Burundi/dhs/raw_burundi_cluster_wealth_.csv', sep=';')
+    stac = pystac_client.Client.open(
+        "https://planetarycomputer.microsoft.com/api/stac/v1",
+        modifier=planetary_computer.sign_inplace,
+    )
+
+    csv = pd.read_csv('../data/Angola/dhs/raw_angola_cluster_wealth_.csv', sep=';')
     csv.drop_duplicates(inplace=True)
     csv = csv.head()
     print(csv)
 
-    for cluster in csv['cluster_id']:
-        bbox = csv.loc[csv['cluster_id'] == cluster, 'area_of_interest'].values[0].replace('[', '').replace(']', '')
-
-        stac = pystac_client.Client.open(
-            "https://planetarycomputer.microsoft.com/api/stac/v1",
-            modifier=planetary_computer.sign_inplace,
-        )
+    for cluster in [1]:
+        df = convert_bbox_to_tuple(csv)
+        bbox = df['area_of_interest'][0]
+        time_of_interest = "2020-01-01/2020-12-31"
 
         search = stac.search(
-            bbox=bbox,
-            datetime="2016-01-01/2016-12-31",
             collections=["landsat-c2-l2"],
-            query={"eo:cloud_cover": {"lt": 25}},
+            bbox=bbox,
+            datetime=time_of_interest,
+            query={"eo:cloud_cover": {"lt": 10}},
         )
 
         items = search.item_collection()
@@ -41,124 +52,34 @@ def main():
         selected_item = min(items, key=lambda item: item.properties["eo:cloud_cover"])
 
         signed_item = planetary_computer.sign(selected_item)
-        print(signed_item)
-        filename = "burundi_" + str(cluster) + ".tif"
-        download_url(signed_item, 'data', filename)
+
+        for band in signed_item.assets.keys():
+
+            asset_href = signed_item.assets[band].href
+            try:
+
+                with rasterio.open(asset_href) as ds:
+                    warped_aoi_bounds = warp.transform_bounds("epsg:4326", ds.crs, *bbox)
+                    aoi_window = windows.from_bounds(transform=ds.transform, *warped_aoi_bounds)
+                    band_data = ds.read(window=aoi_window)
 
 
-def read_IWI():
-    import pyreadstat
-
-    df, meta = pyreadstat.read_sav('../data/Angola2011-addIWI.sav')
-
-    print(df['HHID'][1])
-
-    # done! let's see what we got
-    print(df.head())
-    print(meta.column_names)
-    print(meta.column_labels)
-    print(meta.column_names_to_labels)
-    print(meta.number_rows)
-    print(meta.number_columns)
-    print(meta.file_label)
-    print(meta.file_encoding)
-    # there are other metadata pieces extracted. See the documentation for more details.
-
-    df.to_csv('../data/Angola2011-addIWI.csv')
+                    file_name = 'angola_cluster_' + str(cluster) + '_' + band + '.tif'
+                    img = Image.fromarray(band_data[0])
+                    img.save(file_name)
+            except Exception:
+                print("Band failed to save: ", band)
 
 
-def read_sustain_bench():
-    df = pd.read_csv('../data/dhs_final_labels.csv')[['cname', 'year', 'cluster_id', 'lat', 'lon', 'asset_index']]
-    df = df[df['cname'] == 'AO'].drop(columns=['cname'])
-    df = df[df['year'] == 2011].drop(columns=['year'])
-    df.rename(columns={'asset_index': 'iwi_yeh'}, inplace=True)
-    df.to_csv('../data/sustain_bench.csv', index=False)
 
 
-def read_petterson():
-    df = pd.read_csv('../data/dhs_clusters_rounded.csv')[['country', 'survey_start_year', 'lat', 'lon', 'iwi']]
-    df = df[df['country'] == 'angola'].drop(columns=['country'])
-    df = df[df['survey_start_year'] == 2011].drop(columns=['survey_start_year'])
-    df.rename(columns={'iwi': 'iwi_petterson'}, inplace=True)
-    df.to_csv('../data/petterson.csv', index=False)
+def convert_bbox_to_tuple(df):
 
+    # Convert the area_of_interest column to tuple of floats
+    df['area_of_interest'] = df['area_of_interest'].apply(lambda x: tuple(map(float, x.strip('[]').split(','))))
 
-def merge_all():
-    sustain = pd.read_csv('../data/sustain_bench.csv')
-    petterson = pd.read_csv('../data/Angola/dhs/normalized_petterson.csv')
-    smits = pd.read_csv('../data/Angola/dhs/normalized_angola_cluster_wealth_.csv')
-    df = pd.merge(sustain, petterson, on=['lat', 'lon'], how='inner')
-    df = pd.merge(smits, df, on=['cluster_id', 'lat', 'lon'], how='inner')
-    df.to_csv('../data/merged.csv', index=False)
+    return df
 
-
-def round_lat_lon(csv_path, output_path):
-    # Read the CSV file into a DataFrame
-    df = pd.read_csv(csv_path)
-
-    # Round the lat and lon columns to 6 decimal places
-    df['lat'] = df['lat'].round(6)
-    df['lon'] = df['lon'].round(6)
-
-    # Save the modified DataFrame back to a CSV file
-    df.to_csv(output_path, index=False)
-
-
-def calculate_mean_iwi_per_cluster(csv_path):
-    # Read the CSV file into a DataFrame
-    df = pd.read_csv(csv_path, sep=';')
-    print(df.head())
-
-    # Group by cluster_id and calculate the mean IWI
-    mean_iwi_per_cluster = df.groupby('cluster_id')['iwi'].mean().reset_index()
-
-    # Merge the mean IWI DataFrame back with the original DataFrame to keep the other columns
-    result_df = pd.merge(df, mean_iwi_per_cluster, on='cluster_id', suffixes=('', '_mean'))
-
-    # Drop the iwi column
-    result_df.drop(columns=['iwi', 'HHID'], inplace=True)
-    result_df.drop_duplicates(inplace=True)
-
-    return result_df
-
-
-def normalize_iwi(csv_path, output_path):
-    # Read the CSV file into a DataFrame
-    df = pd.read_csv(csv_path)
-
-    # Convert the iwi column to integers
-    df['iwi_petterson'] = df['iwi_petterson'].astype(float)
-
-    # Initialize the MinMaxScaler
-    scaler = MinMaxScaler()
-
-    # Normalize the iwi column
-    df['iwi_petterson'] = scaler.fit_transform(df[['iwi_petterson']])*100
-
-    # Save the modified DataFrame back to a CSV file
-    df.to_csv(output_path, index=False)
 
 if __name__ == "__main__":
-    merge_all()
-    # Read the merged CSV file into a DataFrame
-    df = pd.read_csv('../data/merged.csv')
-
-    # Create a figure
-    plt.figure(figsize=(10, 6))
-
-    # Plot iwi_petterson against cluster_id
-    plt.plot(df['cluster_id'], df['iwi_petterson'], marker='o', linestyle='-', color='b', label='IWI Petterson')
-
-    # Plot iwi_mean against cluster_id
-    plt.plot(df['cluster_id'], df['iwi_mean'], marker='o', linestyle='-', color='r', label='IWI Mean')
-
-    # Add labels and title
-    plt.xlabel('Cluster ID')
-    plt.ylabel('IWI')
-    plt.title('IWI Petterson and IWI Mean vs Cluster ID')
-
-    # Add legend
-    plt.legend()
-
-    # Display the plot
-    plt.show()
+    main()
