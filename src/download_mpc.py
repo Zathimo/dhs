@@ -53,7 +53,7 @@ def main():
 
         signed_item = planetary_computer.sign(selected_item)
 
-        for band in signed_item.assets.keys():
+        for band in ['red']:
 
             asset_href = signed_item.assets[band].href
             try:
@@ -64,11 +64,12 @@ def main():
                     band_data = ds.read(window=aoi_window)
 
 
-                    file_name = 'angola_cluster_' + str(cluster) + '_' + band + '.tif'
+                    file_name = 'coucou.tif'
                     img = Image.fromarray(band_data[0])
                     img.save(file_name)
+
             except Exception:
-                print("Band failed to save: ", band)
+                download_url(asset_href, 'data', f'{cluster}.png')
 
 
 
