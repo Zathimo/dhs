@@ -1,5 +1,6 @@
 import numpy as np
 import xarray as xr
+import time
 
 import rasterio.features
 import stackstac
@@ -11,36 +12,17 @@ from dask_gateway import GatewayCluster
 
 import matplotlib.pyplot as plt
 
+import rioxarray
+
+
 
 def main():
+    # cluster = GatewayCluster
 
-    area_of_interest = {
-        "type": "Polygon",
-        "coordinates": [
-            [
-                [13.498, -12.386],
-                [13.498, -12.314],
-                [13.572, -12.314],
-                [13.572, -12.386],
-                [13.498, -12.386],
-            ]
-        ],
-    }
+    t = time.time()
 
-    # area_of_interest = {
-    #     "type": "Polygon",
-    #     "coordinates": [
-    #         [
-    #             [-122.27508544921875, 47.54687159892238],
-    #             [-121.96128845214844, 47.54687159892238],
-    #             [-121.96128845214844, 47.745787772920934],
-    #             [-122.27508544921875, 47.745787772920934],
-    #             [-122.27508544921875, 47.54687159892238],
-    #         ]
-    #     ],
-    # }
-    # bbox = rasterio.features.bounds(area_of_interest)
-    bbox = rasterio.features.bounds(area_of_interest)
+
+    bbox = [-122.27508544921875, 47.54687159892238, -121.96128845214844, 47.745787772920934]
 
     stac = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
@@ -48,19 +30,20 @@ def main():
     )
 
     search = stac.search(
-        bbox=[13.498, -12.386, 13.572, -12.314],
-        datetime="2011-01-01/2011-03-31",
-        collections=["landsat-c2-l2"],
-        query={"eo:cloud_cover": {"lt": 10}},
+        bbox=bbox,
+        datetime="2020-01-01/2020-12-31",
+        collections=["sentinel-2-l2a"],
+        query={"eo:cloud_cover": {"lt": 25}},
     )
 
     items = search.item_collection()
-    print(len(items))
+    print("nombre d'items :", len(items))
 
     data = (
         stackstac.stack(
             items,
-            assets=["red", "green", "blue"],  # red, green, blue
+            assets=["B04", "B03", "B02"],  # red, green, blue
+            bounds_latlon=[-122.27508544921875, 47.54687159892238, -121.96128845214844, 47.745787772920934],
             chunksize=4096,
             resolution=100,
         )
@@ -73,12 +56,13 @@ def main():
     data = data.persist()
 
     median = data.median(dim="time").compute()
-    print("coucou")
 
     image = ms.true_color(*median)  # expects red, green, blue DataArrays
-    print(image)
+    print(type(image))
+    print("temps ecoule :", time.time() - t)
 
-    image.plot.imshow()
+    file_name = 'hello.tif'
+    image.transpose('band', 'y', 'x').rio.to_raster(file_name)
 
     # Create a figure and axis
     fig, ax = plt.subplots()
@@ -94,5 +78,8 @@ def main():
     # Display the plot
     plt.show()
 
+
 if __name__ == '__main__':
+
     main()
+
