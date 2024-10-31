@@ -4,6 +4,7 @@ import argparse
 import pandas as pd
 import geopandas as gpd
 
+import src.process_IWI as iwi
 from src.utils import area_of_interest
 import pyreadstat
 
@@ -17,6 +18,8 @@ import pyreadstat
 parser = argparse.ArgumentParser()
 parser.add_argument('--country', dest='country', action='store', type=str,
                     help='name of surveyed country')
+parser.add_argument('--year', dest='year', action='store', type=str,
+                    help='year of survey')
 parser.add_argument('--dhs_survey', dest='dhs_survey', action='store', type=str,
                     help='absolute path to dhs survey file')
 parser.add_argument('--dhs_gps', dest='dhs_gps', action='store', type=str,
@@ -24,48 +27,88 @@ parser.add_argument('--dhs_gps', dest='dhs_gps', action='store', type=str,
 parser.add_argument('--buffer', dest='buffer', action='store', type=int,
                     help='size of buffer zone in km')
 
-args = parser.parse_args()
-country = args.country
-output_path = os.path.join(os.getcwd(), "data", args.country, "dhs")
-if not os.path.exists(output_path):
-    print(f'creating {output_path}')
-    os.makedirs(output_path)
 
-# process DHS survey file, extract mean wealth index for each cluster
-df_wealth = pd.read_stata(args.dhs_survey, convert_categoricals=False)
-df_wealth.head().to_csv(os.path.join(output_path, 'sample_dhs_survey.csv'), index=False)
-df_wealth = (df_wealth[['hhid', 'hv001']]
-             .rename(columns={'hhid': 'HHID',
-                              'hv001': 'cluster_id',
-                              })
-             .dropna())
-print(type(df_wealth['HHID'][1]))
+def main(country, year, buffer):
+    output_path = os.path.join(os.getcwd(), "data", "dhs")
+    if not os.path.exists(output_path):
+        print(f'creating {output_path}')
+        os.makedirs(output_path)
 
-# process DHS shapefile, extract cluster long, lat
-df_geo = (gpd.read_file(args.dhs_gps)[['DHSCLUST', 'LATNUM', 'LONGNUM']]
-          .rename(columns={'DHSCLUST': 'cluster_id',
-                           'LATNUM': 'lat',
-                           'LONGNUM': 'lon'}))
+    folder = os.path.join('data', country, year)
+    dhs_survey = None
+    dhs_gps = None
+    dhs_iwi = None
 
-# merge cluster wealth index and location information
-# calculate area of interest coordinates
-output = pd.merge(df_wealth, df_geo, on='cluster_id', how='inner')
+    for file_name in os.listdir(folder):
+        if file_name.endswith('.DTA'):
+            dhs_survey = os.path.join(folder, file_name)
+            print("dhs_survey", file_name)
+        if file_name.endswith('.shp'):
+            dhs_gps = os.path.join(folder, file_name)
+            print("dhs_gps", file_name)
+        if file_name.endswith('.sav'):
+            dhs_iwi = os.path.join(folder, file_name)
+            print("dhs_iwi", file_name)
 
-output['area_of_interest'] = output.apply(lambda x: area_of_interest(x['lat'],
-                                                                     x['lon'],
-                                                                     args.buffer),
-                                          axis=1)
-print('generated bounding box area of interest around each cluster')
+    #####################################################################
+    # Process DHS survey file, extract mean wealth index for each cluster
+    #####################################################################
 
-print(output.head())
+    df_wealth = pd.read_stata(dhs_survey, convert_categoricals=False)
+    df_wealth['country'] = country
+    df_wealth = (df_wealth[['country', 'hv007', 'hhid', 'hv001']]
+                 .rename(columns={'hv007': 'year',
+                                  'hhid': 'HHID',
+                                  'hv001': 'cluster_id',
+                                  })
+                 .dropna())
 
-# add IWI to the dataset
-df_iwi, meta = pyreadstat.read_sav('data/Angola2011-addIWI.sav')
-df_iwi = df_iwi[['HHID', 'iwi']].rename(columns={'iwi': 'iwi_smits'})
+    print('Selected DHS columns.')
 
-output = pd.merge(output, df_iwi, on='HHID', how='inner')
+    ##################################################
+    # Process DHS shapefile, extract cluster long, lat
+    ##################################################
 
-output_dest = os.path.join(output_path, f'raw_{args.country}_cluster_wealth_.csv')
+    df_geo = (gpd.read_file(dhs_gps)[['DHSCLUST', 'LATNUM', 'LONGNUM']]
+              .rename(columns={'DHSCLUST': 'cluster_id',
+                               'LATNUM': 'lat',
+                               'LONGNUM': 'lon'}))
 
-output.to_csv(output_dest, index=False, sep=';')
-print('successfully processed DHS information')
+    # merge cluster wealth index and location information
+    dhs_geo = pd.merge(df_wealth, df_geo, on='cluster_id', how='inner')
+
+    # calculate area of interest coordinates
+    dhs_geo['area_of_interest'] = dhs_geo.apply(lambda x: area_of_interest(x['lat'],
+                                                                           x['lon'],
+                                                                           buffer),
+                                                axis=1)
+
+    print('Generated bounding box area of interest around each cluster.')
+
+    ########################
+    # Add IWI to the dataset
+    ########################
+
+    if dhs_iwi:
+        output = iwi.get_IWI_global(dhs_geo, dhs_iwi)
+    else:
+        output = iwi.get_IWI_petterson(dhs_geo)
+
+    output_dest = os.path.join(output_path, f'{country}_{year}.csv')
+
+    output.to_csv(output_dest, index=False, sep=';')
+    print('successfully processed DHS information')
+
+
+if __name__ == '__main__':
+    buffer = 5
+
+    # for folder_name in os.listdir('data'):
+    #     folder_path = os.path.join('data', folder_name)
+    #     if os.path.isdir(folder_path):
+    #         for subfolder_name in os.listdir(folder_path):
+    #            main(folder_path, subfolder_name, buffer)
+
+    if os.path.isdir('data/angola'):
+        for subfolder_name in os.listdir('data/angola'):
+            main('angola', subfolder_name, buffer)

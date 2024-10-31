@@ -11,15 +11,6 @@ from shapely.geometry import Point
 from shapely.ops import transform
 
 
-class GoogleEarthEngineDownloadError(Exception):
-    """Indicates an error occurred whilst downloading image from GEE"""
-    def __init__(self, message):
-        self.error_message = message
-
-    def __str__(self):
-        return f'gee>> download failed! message: {self.error_message}'
-
-
 def area_of_interest(lat, lon, km):
     """
     Generate a buffer around a location (lat, long). Returns
@@ -51,18 +42,3 @@ def rescale(arr, axes=0):
     Scale input array to 0 - 255.
     """
     return ((arr - arr.min()) * (1/(arr.max() - arr.min()) * 255)).astype('uint8')
-
-
-def tif_to_rgb(input_dir, output_dir):
-    """
-    Convert .tif images to .rgb.
-    """
-    for f_in in glob.glob(os.path.join(input_dir, '*')):
-        scene = fill(rio.open(f_in).read([3, 2, 1]))
-        if np.isnan(scene).any():
-            continue
-        scene_shift = np.moveaxis(scene, 0, -1)
-        scene_rescaled = np.apply_over_axes(rescale, scene_shift, axes=-1)
-        img = Image.fromarray(scene_rescaled)
-        f_out = f"{f_in.split('/')[-1].split('.')[0]}.jpeg"
-        img.save(os.path.join(output_dir, f_out))
