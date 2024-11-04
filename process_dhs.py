@@ -8,6 +8,7 @@ import src.process_IWI as iwi
 from src.utils import area_of_interest
 import pyreadstat
 
+
 # this script takes corresponding DHS survey .DTA and .shp files as input.
 # It selects out the cluster id and associated wealth index information 
 # from the .DTA file and merges it with the latitude and longitude of each
@@ -15,26 +16,17 @@ import pyreadstat
 # generated from the coordinates of each cluster. This AOI will be used to
 # query GEE for accompanying satellite imagery.
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--country', dest='country', action='store', type=str,
-                    help='name of surveyed country')
-parser.add_argument('--year', dest='year', action='store', type=str,
-                    help='year of survey')
-parser.add_argument('--dhs_survey', dest='dhs_survey', action='store', type=str,
-                    help='absolute path to dhs survey file')
-parser.add_argument('--dhs_gps', dest='dhs_gps', action='store', type=str,
-                    help='absolute path to dhs gps file')
-parser.add_argument('--buffer', dest='buffer', action='store', type=int,
-                    help='size of buffer zone in km')
 
+def main(folder_path, country, year, buffer):
 
-def main(country, year, buffer):
     output_path = os.path.join(os.getcwd(), "data", "dhs")
+
     if not os.path.exists(output_path):
         print(f'creating {output_path}')
         os.makedirs(output_path)
 
-    folder = os.path.join('data', country, year)
+    folder = os.path.join(folder_path, year)
+
     dhs_survey = None
     dhs_gps = None
     dhs_iwi = None
@@ -42,13 +34,13 @@ def main(country, year, buffer):
     for file_name in os.listdir(folder):
         if file_name.endswith('.DTA'):
             dhs_survey = os.path.join(folder, file_name)
-            print("dhs_survey", file_name)
+            print("dhs_survey:", file_name)
         if file_name.endswith('.shp'):
             dhs_gps = os.path.join(folder, file_name)
-            print("dhs_gps", file_name)
+            print("dhs_gps:", file_name)
         if file_name.endswith('.sav'):
             dhs_iwi = os.path.join(folder, file_name)
-            print("dhs_iwi", file_name)
+            print("dhs_iwi:", file_name)
 
     #####################################################################
     # Process DHS survey file, extract mean wealth index for each cluster
@@ -56,12 +48,15 @@ def main(country, year, buffer):
 
     df_wealth = pd.read_stata(dhs_survey, convert_categoricals=False)
     df_wealth['country'] = country
-    df_wealth = (df_wealth[['country', 'hv007', 'hhid', 'hv001']]
+    df_wealth = (df_wealth[['country', 'hv007', 'hhid', 'hv001', 'hv025']]
                  .rename(columns={'hv007': 'year',
                                   'hhid': 'HHID',
                                   'hv001': 'cluster_id',
+                                  'hv025': 'urban_rural',
                                   })
                  .dropna())
+
+    df_wealth['HHID'] = df_wealth['HHID'].str.strip()
 
     print('Selected DHS columns.')
 
@@ -83,6 +78,8 @@ def main(country, year, buffer):
                                                                            buffer),
                                                 axis=1)
 
+    dhs_geo.to_csv(os.path.join(output_path, f'{country}_{year}_cluster_wealth.csv'), index=False, sep=';')
+
     print('Generated bounding box area of interest around each cluster.')
 
     ########################
@@ -94,7 +91,7 @@ def main(country, year, buffer):
     else:
         output = iwi.get_IWI_petterson(dhs_geo)
 
-    output_dest = os.path.join(output_path, f'{country}_{year}.csv')
+    output_dest = os.path.join(os.getcwd(), "data", "dhs", f'{country}_{year}.csv')
 
     output.to_csv(output_dest, index=False, sep=';')
     print('successfully processed DHS information')
@@ -103,12 +100,13 @@ def main(country, year, buffer):
 if __name__ == '__main__':
     buffer = 5
 
-    # for folder_name in os.listdir('data'):
-    #     folder_path = os.path.join('data', folder_name)
-    #     if os.path.isdir(folder_path):
-    #         for subfolder_name in os.listdir(folder_path):
-    #            main(folder_path, subfolder_name, buffer)
+    for folder_name in os.listdir('data'):
+        folder_path = os.path.join('data', folder_name)
+        if os.path.isdir(folder_path):
+            for subfolder_name in os.listdir(folder_path):
+                try:
+                    main(folder_path, folder_name, subfolder_name, buffer)
+                except Exception as e:
+                    print(f'Error processing {folder_path}/{subfolder_name}: {e}')
+                    continue
 
-    if os.path.isdir('data/angola'):
-        for subfolder_name in os.listdir('data/angola'):
-            main('angola', subfolder_name, buffer)
