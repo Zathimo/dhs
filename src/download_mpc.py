@@ -21,6 +21,8 @@ from PIL import Image
 
 import os
 
+import test_mosaic
+
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
@@ -30,46 +32,18 @@ def main():
         modifier=planetary_computer.sign_inplace,
     )
 
-    csv = pd.read_csv('../data/dhs/Angola_2006.csv', sep=';')
+    csv = pd.read_csv('../data/dhs/Angola_2011.csv', sep=';')
     csv.drop_duplicates(inplace=True)
+    csv = csv.head()
     print(csv)
     df = convert_bbox_to_tuple(csv)
 
     for cluster in csv['cluster_id']:
         bbox = df['area_of_interest'][0]
-        time_of_interest = "2020-01-01/2020-12-31"
+        year = df[df['cluster_id'] == cluster]['year'].values[0]
+        print(cluster, bbox, year)
 
-        search = stac.search(
-            collections=["landsat-c2-l2"],
-            bbox=bbox,
-            datetime=time_of_interest,
-            query={"eo:cloud_cover": {"lt": 10}},
-        )
-
-        items = search.item_collection()
-
-        selected_item = min(items, key=lambda item: item.properties["eo:cloud_cover"])
-
-        signed_item = planetary_computer.sign(selected_item)
-
-        for band in signed_item.assets:
-
-            asset_href = signed_item.assets[band].href
-            try:
-
-                with rasterio.open(asset_href) as ds:
-                    warped_aoi_bounds = warp.transform_bounds("epsg:4326", ds.crs, *bbox)
-                    aoi_window = windows.from_bounds(transform=ds.transform, *warped_aoi_bounds)
-                    band_data = ds.read(window=aoi_window)
-
-                    file_name = 'data/' + f'{cluster}_{band}.tif'
-                    img = Image.fromarray(band_data[0])
-                    img.save(file_name)
-
-            except Exception:
-                print(f"Error processing {asset_href}")
-
-
+        test_mosaic.cloudless_mosaic(cluster, bbox, year)
 
 
 def convert_bbox_to_tuple(df):

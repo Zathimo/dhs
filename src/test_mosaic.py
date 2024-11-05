@@ -8,12 +8,10 @@ import planetary_computer
 import rioxarray
 
 
-def main():
+def cloudless_mosaic(cluster_id, bbox, year, cloud_cover=25):
     # cluster = GatewayCluster
 
     t = time.time()
-
-    bbox = (-122.27508544921875, 47.54687159892238, -121.96128845214844, 47.745787772920934)
 
     stac = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
@@ -24,9 +22,9 @@ def main():
 
     search = stac.search(
         bbox=bbox,
-        datetime="2009-01-01/2011-12-31",
+        datetime=f"{year}-01-01/{year}-12-31",
         collections=["landsat-c2-l2"],
-        query={"eo:cloud_cover": {"lt": 25}},
+        query={"eo:cloud_cover": {"lt": cloud_cover}},
     )
 
     items = search.item_collection()
@@ -51,10 +49,10 @@ def main():
 
     print(median)
 
-    file_name = f'data/landsat_red.tif'
+    file_name = f'data/landsat_{cluster_id}.tif'
     ds = median.to_dataset(dim='band')
     ds.transpose('band', 'y', 'x').rio.to_raster(file_name)
 
 
 if __name__ == '__main__':
-    main()
+    cloudless_mosaic()
