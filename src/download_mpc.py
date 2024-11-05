@@ -30,13 +30,12 @@ def main():
         modifier=planetary_computer.sign_inplace,
     )
 
-    csv = pd.read_csv('../data/Angola/dhs/raw_angola_cluster_wealth_.csv', sep=';')
+    csv = pd.read_csv('../data/dhs/Angola_2006.csv', sep=';')
     csv.drop_duplicates(inplace=True)
-    csv = csv.head()
     print(csv)
+    df = convert_bbox_to_tuple(csv)
 
-    for cluster in [1]:
-        df = convert_bbox_to_tuple(csv)
+    for cluster in csv['cluster_id']:
         bbox = df['area_of_interest'][0]
         time_of_interest = "2020-01-01/2020-12-31"
 
@@ -53,7 +52,7 @@ def main():
 
         signed_item = planetary_computer.sign(selected_item)
 
-        for band in ['red']:
+        for band in signed_item.assets:
 
             asset_href = signed_item.assets[band].href
             try:
@@ -63,13 +62,12 @@ def main():
                     aoi_window = windows.from_bounds(transform=ds.transform, *warped_aoi_bounds)
                     band_data = ds.read(window=aoi_window)
 
-
-                    file_name = 'coucou.tif'
+                    file_name = 'data/' + f'{cluster}_{band}.tif'
                     img = Image.fromarray(band_data[0])
                     img.save(file_name)
 
             except Exception:
-                download_url(asset_href, 'data', f'{cluster}.png')
+                print(f"Error processing {asset_href}")
 
 
 
