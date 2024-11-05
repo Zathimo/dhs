@@ -5,10 +5,6 @@ import stackstac
 import pystac_client
 import planetary_computer
 
-import xrspatial.multispectral as ms
-
-import matplotlib.pyplot as plt
-
 import rioxarray
 
 
@@ -28,7 +24,7 @@ def main():
 
     search = stac.search(
         bbox=bbox,
-        datetime="2020-01-01/2020-12-31",
+        datetime="2009-01-01/2011-12-31",
         collections=["landsat-c2-l2"],
         query={"eo:cloud_cover": {"lt": 25}},
     )
@@ -39,7 +35,6 @@ def main():
     data = ((
                 stackstac.stack(
                     items,
-                    assets=["red", "green", "blue"],
                     bounds_latlon=bbox,
                     chunksize=4096,
                     resolution=30,
@@ -54,19 +49,11 @@ def main():
 
     median = data.median(dim="time").compute()
 
-    landsat_image = ms.true_color(*median)[..., :3]  # expects red, green, blue DataArrays
-    print('Landsat image:', landsat_image)
-    fig, ax = plt.subplots(figsize=(8, 8))
+    print(median)
 
-    ax.set_axis_off()
-    landsat_image.plot.imshow(ax=ax)
-    print("temps ecoule :", time.time() - t)
-
-    # Display the plot
-    plt.show()
-
-    file_name = 'cloudless_landsat.tif'
-    landsat_image.transpose('band', 'y', 'x').rio.to_raster(file_name)
+    file_name = f'data/landsat_red.tif'
+    ds = median.to_dataset(dim='band')
+    ds.transpose('band', 'y', 'x').rio.to_raster(file_name)
 
 
 if __name__ == '__main__':
