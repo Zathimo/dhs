@@ -99,20 +99,28 @@ def main(folder_path, country, year, buffer):
     output.to_csv(output_dest, index=False, sep=';')
     print('successfully processed DHS information')
 
+    return output
+
 
 if __name__ == '__main__':
     buffer = 5
     df_errors = pd.DataFrame(columns=['folder', 'subfolder', 'error'])
+
+    all_data = pd.DataFrame(columns=['country', 'year', 'cluster_id', 'urban_rural', 'lat', 'lon', 'area_of_interest', 'iwi'])
 
     for folder_name in os.listdir('data'):
         folder_path = os.path.join('data', folder_name)
         if os.path.isdir(folder_path):
             for subfolder_name in os.listdir(folder_path):
                 try:
-                    main(folder_path, folder_name, subfolder_name, buffer)
+                    all_data = pd.concat([all_data, main(folder_path, folder_name, subfolder_name, buffer)], axis=0)
+                    all_data.to_csv('data/global_data_lab.csv', index=False)
                 except Exception as e:
                     print(f'Error processing {folder_path}/{subfolder_name}: {e}')
+                    df_errors = df_errors.append({'folder': folder_name, 'subfolder': subfolder_name, 'error': e},
+                                                 ignore_index=True)
+                    df_errors.to_csv('data/errors.csv', index=False)
                     continue
 
-    df_errors.to_csv('data/errors.csv', index=False)
+
 

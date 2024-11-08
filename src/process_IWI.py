@@ -37,7 +37,8 @@ def read_sustain_bench():
 
 
 def get_IWI_petterson(df):
-    df = df.drop_duplicates('cluster_id')
+    df.drop_duplicates('cluster_id')
+    df.drop(columns=['HHID'], inplace=True)
     df_iwi = pd.read_csv('data/dhs_clusters.csv', sep=',')
     df_iwi = df_iwi[['lat', 'lon', 'iwi']]
 
