@@ -42,6 +42,10 @@ def main(folder_path, country, year, buffer):
             dhs_iwi = os.path.join(folder, file_name)
             print("dhs_iwi:", file_name)
 
+    if not dhs_survey or not dhs_gps or not dhs_iwi:
+        print(f"Skipping {folder}")
+        return
+
     #####################################################################
     # Process DHS survey file, extract mean wealth index for each cluster
     #####################################################################
@@ -103,24 +107,15 @@ def main(folder_path, country, year, buffer):
 
 
 if __name__ == '__main__':
-    buffer = 5
-    df_errors = pd.DataFrame(columns=['folder', 'subfolder', 'error'])
 
-    all_data = pd.DataFrame(columns=['country', 'year', 'cluster_id', 'urban_rural', 'lat', 'lon', 'area_of_interest', 'iwi'])
+    file_path = 'data/global_data_lab_only.csv'
 
-    for folder_name in os.listdir('data'):
-        folder_path = os.path.join('data', folder_name)
-        if os.path.isdir(folder_path):
-            for subfolder_name in os.listdir(folder_path):
-                try:
-                    all_data = pd.concat([all_data, main(folder_path, folder_name, subfolder_name, buffer)], axis=0)
-                    all_data.to_csv('data/global_data_lab.csv', index=False)
-                except Exception as e:
-                    print(f'Error processing {folder_path}/{subfolder_name}: {e}')
-                    df_errors = df_errors.append({'folder': folder_name, 'subfolder': subfolder_name, 'error': e},
-                                                 ignore_index=True)
-                    df_errors.to_csv('data/errors.csv', index=False)
-                    continue
+    df = pd.read_csv(file_path)
 
+    # Drop rows where the 'lat' column is equal to 0
+    df = df[df['lat'] != 0]
+
+    # Save the modified DataFrame back to the CSV file
+    df.to_csv(file_path, index=False)
 
 

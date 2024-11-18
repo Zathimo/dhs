@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats
 import pyreadstat
+from sklearn.metrics import r2_score
 
 import os
 
@@ -35,9 +36,17 @@ def read_sustain_bench():
     df.rename(columns={'asset_index': 'iwi'}, inplace=True)
     df.to_csv('../data/sustain_bench.csv', index=False)
 
+def read_petterson():
+    df = pd.read_csv('../data/dhs_clusters_rounded.csv')[['country', 'year', 'lat', 'lon', 'iwi']]
+
+    df['lat'] = df['lat'].round(6)
+    df['lon'] = df['lon'].round(6)
+
+    df.to_csv('../data/petterson.csv', index=False)
+
 
 def get_IWI_petterson(df):
-    df.drop_duplicates('cluster_id')
+    df.drop_duplicates('cluster_id', inplace=True)
     df.drop(columns=['HHID'], inplace=True)
     df_iwi = pd.read_csv('data/dhs_clusters.csv', sep=',')
     df_iwi = df_iwi[['lat', 'lon', 'iwi']]
@@ -78,5 +87,52 @@ def get_IWI_global(df, input_path):
     return output
 
 
+def compute_correlation_petterson(petterson_path, global_data_lab_path):
+    # Read the CSV files
+    df_sustain_bench = pd.read_csv(petterson_path)
+    df_sustain_bench.dropna(subset=['iwi'], inplace=True)
+    df_global_data_lab = pd.read_csv(global_data_lab_path)
+
+    # Merge the DataFrames on common columns (e.g., lat and lon)
+    merged_df = pd.merge(df_sustain_bench, df_global_data_lab, on=['lat', 'lon'], suffixes=('_petterson', '_global'))
+    merged_df.drop(columns=['country_global', 'year_global', 'area_of_interest', 'urban_rural', 'lat', 'lon'], inplace=True)
+
+    merged_df.to_csv('../data/merged_petterson.csv', index=False)
+
+    # Compute the correlation between the iwi columns
+    correlation = merged_df['iwi_petterson'].corr(merged_df['iwi_global'])
+
+    return correlation
+
+
+def compute_correlation_sustain(sustain_bench_path, global_data_lab_path):
+    # Read the CSV files
+    df_sustain_bench = pd.read_csv(sustain_bench_path)
+    df_sustain_bench.dropna(subset=['iwi'], inplace=True)
+    df_global_data_lab = pd.read_csv(global_data_lab_path)
+
+    # Merge the DataFrames on common columns (e.g., country, year, cluster_id)
+    merged_df = pd.merge(df_sustain_bench, df_global_data_lab, on=['country', 'year', 'cluster_id'], suffixes=('_sustain', '_global'))
+
+    # Compute the correlation between the iwi columns
+    correlation = merged_df['iwi_sustain'].corr(merged_df['iwi_global'])
+
+    return correlation
+
+
+def normalize_iwi(file_path):
+    # Read the CSV file into a DataFrame
+    df = pd.read_csv(file_path)
+
+    # Normalize the 'iwi' column
+    df['iwi'] = (df['iwi'] - df['iwi'].mean()) / df['iwi'].std()
+
+    # Save the modified DataFrame back to the CSV file
+    df.to_csv('../data/global_data_lab_normalized.csv', index=False)
+
+
 if __name__ == "__main__":
-    read_sustain_bench()
+    sustain_path = '../data/sustain_bench.csv'
+    global_data_lab_path = '../data/global_data_lab_only.csv'
+    correlation_value = compute_correlation_sustain(sustain_path, global_data_lab_path)
+    print(f"Correlation value: {correlation_value}")
