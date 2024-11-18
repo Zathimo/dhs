@@ -15,7 +15,8 @@ CNAMES = {'AO': 'Angola', 'BJ': 'Benin', 'BF': 'Burkina_Faso', 'BU': 'Burundi', 
           'CD': 'Congo_Democratic_Republic', 'SZ': 'Eswatini', 'ET': 'Ethiopia', 'GA': 'Gabon', 'GM': 'Gambia',
           'GH': 'Ghana', 'GN': 'Guinea', 'KE': 'Kenya', 'LS': 'Lesotho', 'LB': 'Liberia', 'MD': 'Madagascar',
           'MW': 'Malawi', 'ML': 'Mali', 'MZ': 'Mozambique', 'NM': 'Namibia', 'NI': 'Niger',
-          'NG': 'Nigeria', 'RW': 'Rwanda', 'SL': 'Sierra_Leone', 'ZA': 'South_Africa', 'SN': 'Senegal', 'TZ': 'Tanzania',
+          'NG': 'Nigeria', 'RW': 'Rwanda', 'SL': 'Sierra_Leone', 'ZA': 'South_Africa', 'SN': 'Senegal',
+          'TZ': 'Tanzania',
           'TG': 'Togo',
           'ZM': 'Zambia', 'ZW': 'Zimbabwe'}
 
@@ -30,19 +31,24 @@ def read_IWI(input_path, output_path):
 
 
 def read_sustain_bench():
-    df = pd.read_csv('../data/dhs_final_labels.csv')[['cname', 'year', 'cluster_id', 'lat', 'lon', 'asset_index']]
+    df = pd.read_csv('data/dhs_final_labels.csv')[['cname', 'year', 'cluster_id', 'lat', 'lon', 'asset_index']]
     df = df[df['cname'].isin(CNAMES.keys())].rename(columns={'cname': 'country'})
     df['country'] = df['country'].map(CNAMES)
     df.rename(columns={'asset_index': 'iwi'}, inplace=True)
-    df.to_csv('../data/sustain_bench.csv', index=False)
-
-def read_petterson():
-    df = pd.read_csv('../data/dhs_clusters_rounded.csv')[['country', 'year', 'lat', 'lon', 'iwi']]
 
     df['lat'] = df['lat'].round(6)
     df['lon'] = df['lon'].round(6)
 
-    df.to_csv('../data/petterson.csv', index=False)
+    return df
+
+
+def read_petterson():
+    df = pd.read_csv('data/dhs_clusters_rounded.csv')[['country', 'year', 'lat', 'lon', 'iwi']]
+
+    df['lat'] = df['lat'].round(6)
+    df['lon'] = df['lon'].round(6)
+
+    return df
 
 
 def get_IWI_petterson(df):
@@ -60,7 +66,6 @@ def get_IWI_petterson(df):
 
 
 def calculate_mean_iwi_per_cluster(df):
-
     # Group by cluster_id and calculate the mean IWI
     mean_iwi_per_cluster = df.groupby('cluster_id')['iwi'].mean().reset_index()
 
@@ -95,7 +100,8 @@ def compute_correlation_petterson(petterson_path, global_data_lab_path):
 
     # Merge the DataFrames on common columns (e.g., lat and lon)
     merged_df = pd.merge(df_sustain_bench, df_global_data_lab, on=['lat', 'lon'], suffixes=('_petterson', '_global'))
-    merged_df.drop(columns=['country_global', 'year_global', 'area_of_interest', 'urban_rural', 'lat', 'lon'], inplace=True)
+    merged_df.drop(columns=['country_global', 'year_global', 'area_of_interest', 'urban_rural', 'lat', 'lon'],
+                   inplace=True)
 
     merged_df.to_csv('../data/merged_petterson.csv', index=False)
 
@@ -112,7 +118,8 @@ def compute_correlation_sustain(sustain_bench_path, global_data_lab_path):
     df_global_data_lab = pd.read_csv(global_data_lab_path)
 
     # Merge the DataFrames on common columns (e.g., country, year, cluster_id)
-    merged_df = pd.merge(df_sustain_bench, df_global_data_lab, on=['country', 'year', 'cluster_id'], suffixes=('_sustain', '_global'))
+    merged_df = pd.merge(df_sustain_bench, df_global_data_lab, on=['country', 'year', 'cluster_id'],
+                         suffixes=('_sustain', '_global'))
 
     # Compute the correlation between the iwi columns
     correlation = merged_df['iwi_sustain'].corr(merged_df['iwi_global'])
