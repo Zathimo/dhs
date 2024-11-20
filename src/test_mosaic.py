@@ -28,7 +28,6 @@ def cloudless_mosaic(cluster_id, bbox, year, cloud_cover=25):
     )
 
     items = search.item_collection()
-    print("nombre d'items :", len(items))
 
     data = ((
                 stackstac.stack(
@@ -41,13 +40,10 @@ def cloudless_mosaic(cluster_id, bbox, year, cloud_cover=25):
                     lambda x: x > 0, other=np.nan
                 )
             ))
-    print(data)
 
     data = data.persist()
 
     median = data.median(dim="time").compute()
-
-    print(median)
 
     file_name = f'data/landsat_{cluster_id}.tif'
     ds = median.to_dataset(dim='band')
@@ -55,4 +51,4 @@ def cloudless_mosaic(cluster_id, bbox, year, cloud_cover=25):
 
 
 if __name__ == '__main__':
-    cloudless_mosaic()
+    pass

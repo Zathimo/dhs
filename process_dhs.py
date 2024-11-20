@@ -2,6 +2,7 @@ import os
 
 import pandas as pd
 import geopandas as gpd
+from math import isnan
 
 import src.process_IWI as iwi
 from src.utils import area_of_interest
@@ -108,26 +109,3 @@ def main(folder_path, country, year, buffer):
 
 if __name__ == '__main__':
     buffer = 5
-    df_global = pd.read_csv('data/global_data_lab_only.csv')
-    df_global['lat'] = df_global['lat'].round(6)
-    df_global['lon'] = df_global['lon'].round(6)
-
-    df_petterson = read_petterson()
-    df_sustain = read_sustain_bench()
-
-
-    df_all = pd.concat([df_global, df_petterson, df_sustain])
-
-    df_all.drop_duplicates(['lat', 'lon'], inplace=True)
-    df_all.drop(['iwi'], axis=1, inplace=True)
-
-    df_all['area_of_interest'] = df_all.apply(lambda x: area_of_interest(x['lat'],
-                                                                         x['lon'],
-                                                                         buffer),
-                                              axis=1)
-
-    df_all['country'] = df_all['country'].str.lower()
-
-    df_all.sort_values(['country', 'year'], inplace=True)
-
-    df_all.to_csv('data/areas_of_interest.csv', index=False, sep=';')

@@ -32,14 +32,13 @@ def main():
         modifier=planetary_computer.sign_inplace,
     )
 
-    csv = pd.read_csv('../data/dhs/Angola_2011.csv', sep=';')
+    csv = pd.read_csv('data/areas_of_interest.csv', sep=';')
     csv.drop_duplicates(inplace=True)
-    csv = csv.head()
-    print(csv)
+
     df = convert_bbox_to_tuple(csv)
 
     for cluster in csv['cluster_id']:
-        bbox = df['area_of_interest'][0]
+        bbox = df[df['cluster_id'] == cluster]['area_of_interest'].values[0]
         year = df[df['cluster_id'] == cluster]['year'].values[0]
         print(cluster, bbox, year)
 
