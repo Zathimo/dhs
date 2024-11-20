@@ -1,23 +1,4 @@
-import pystac_client
-import requests
-import planetary_computer
-from pystac_client.stac_api_io import StacApiIO
 import pandas as pd
-
-from urllib3 import Retry
-from urllib.parse import urlparse
-
-from torchgeo.datasets.utils import download_url
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import MinMaxScaler
-import scipy.stats
-
-import rasterio
-from rasterio import windows
-from rasterio import warp
-
-import numpy as np
-from PIL import Image
 
 import os
 
@@ -27,22 +8,33 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
 def main():
-    stac = pystac_client.Client.open(
-        "https://planetarycomputer.microsoft.com/api/stac/v1",
-        modifier=planetary_computer.sign_inplace,
-    )
 
     csv = pd.read_csv('data/areas_of_interest.csv', sep=';')
-    csv.drop_duplicates(inplace=True)
 
     df = convert_bbox_to_tuple(csv)
+    error_log = []
 
-    for cluster in csv['cluster_id']:
-        bbox = df[df['cluster_id'] == cluster]['area_of_interest'].values[0]
-        year = df[df['cluster_id'] == cluster]['year'].values[0]
-        print(cluster, bbox, year)
+    for country in df['country'].unique():
+        df_country = df[df['country'] == country]
+        for year in df_country['year'].unique():
+            df_year = df_country[df_country['year'] == year]
+            output_path = os.path.join(os.getcwd(), "data", country, str(year))
+            if not os.path.exists(output_path):
+                print(f'creating {output_path}')
+                os.makedirs(output_path)
 
-        test_mosaic.cloudless_mosaic(cluster, bbox, year)
+            for cluster in df_year['cluster_id'].unique():
+                bbox = df_year[df_year['cluster_id'] == cluster]['area_of_interest'].values[0]
+                print('cluster:', cluster, 'bbox:', bbox)
+
+                try:
+                    test_mosaic.cloudless_mosaic(cluster, bbox, year, output_path)
+                except Exception as e:
+                    error_log.append({'country': country, 'year': year, 'cluster_id': cluster, 'error': str(e)})
+
+    if error_log:
+        error_df = pd.DataFrame(error_log)
+        error_df.to_csv('data/errors.csv', index=False, sep=';')
 
 
 def convert_bbox_to_tuple(df):

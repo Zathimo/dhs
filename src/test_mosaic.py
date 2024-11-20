@@ -1,3 +1,5 @@
+import os.path
+
 import numpy as np
 import time
 
@@ -8,7 +10,7 @@ import planetary_computer
 import rioxarray
 
 
-def cloudless_mosaic(cluster_id, bbox, year, cloud_cover=25):
+def cloudless_mosaic(cluster_id, bbox, year, output_path, cloud_cover=25):
     # cluster = GatewayCluster
 
     t = time.time()
@@ -35,6 +37,7 @@ def cloudless_mosaic(cluster_id, bbox, year, cloud_cover=25):
                     bounds_latlon=bbox,
                     chunksize=4096,
                     resolution=30,
+                    epsg=3857,
                 )
                 .where(
                     lambda x: x > 0, other=np.nan
@@ -45,10 +48,11 @@ def cloudless_mosaic(cluster_id, bbox, year, cloud_cover=25):
 
     median = data.median(dim="time").compute()
 
-    file_name = f'data/landsat_{cluster_id}.tif'
+    file_name = f'{cluster_id}.tif'
+    file_path = os.path.join(output_path, file_name)
     ds = median.to_dataset(dim='band')
-    ds.transpose('band', 'y', 'x').rio.to_raster(file_name)
+    ds.transpose('band', 'y', 'x').rio.to_raster(file_path)
 
 
 if __name__ == '__main__':
-    pass
+    cloudless_mosaic(1, (13.489, -12.395, 13.581, -12.305), 2011, 'data')
