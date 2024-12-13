@@ -12,12 +12,16 @@ def main():
 
     df = convert_bbox_to_tuple(csv)
     error_log = []
+    df_items = []
 
     for country in df['country'].unique():
         df_country = df[df['country'] == country]
+        print('country:', country)
         for year in df_country['year'].unique():
+            df_items_year = []
             df_year = df_country[df_country['year'] == year]
             output_path = os.path.join(os.getcwd(), "data", country, str(year))
+            print('year:', year)
             if not os.path.exists(output_path):
                 print(f'creating {output_path}')
                 os.makedirs(output_path)
@@ -27,9 +31,17 @@ def main():
                 print('cluster:', cluster, 'bbox:', bbox)
 
                 try:
-                    test_mosaic.cloudless_mosaic(cluster, bbox, year, output_path)
+                    items = test_mosaic.cloudless_mosaic(cluster, bbox, year, output_path)
+                    df_items_year.append({'country': country, 'year': year, 'cluster_id': cluster, "items": items})
+                    df_items.append(df_items_year)
                 except Exception as e:
                     error_log.append({'country': country, 'year': year, 'cluster_id': cluster, 'error': str(e)})
+
+            df_items_year = pd.DataFrame(df_items_year)
+            df_items_year.to_csv(f'data/{country}/{year}/items_per_cluster_1y_cloud25.csv', index=False, sep=';')
+
+    df_items_year = pd.DataFrame(df_items)
+    df_items_year.to_csv(f'data/items_per_cluster_1y_cloud25.csv', index=False, sep=';')
 
     if error_log:
         error_df = pd.DataFrame(error_log)
@@ -62,8 +74,4 @@ def extract_country_year_cluster(data_path, output_path):
 
 
 if __name__ == "__main__":
-    aoi = pd.read_csv('../data/global_data_lab_only.csv', sep=',')
-    aoi['country'] = aoi['country'].apply(lambda x: x.lower())
-    cyc = pd.read_csv('data/downloaded_aoi.csv', sep=';')
-    filtered = pd.merge(cyc, aoi, on=['country', 'year', 'cluster_id'])
-    filtered.to_csv('data/filtered_dataset.csv', index=False, sep=';')
+    main()
