@@ -1,4 +1,6 @@
 import pandas as pd
+import rasterio
+from tqdm import tqdm
 
 import os
 
@@ -72,6 +74,28 @@ def extract_country_year_cluster(data_path, output_path):
     df = pd.DataFrame(data)
     df.to_csv(output_path, index=False, sep=';')
 
+def select_landsat7(dataset_csv, data_path, output_path):
+    data = []
+
+    dataframe = pd.read_csv(dataset_csv, sep=';')
+
+    for idx in tqdm(range(len(dataframe))):
+
+        row = dataframe.iloc[idx]
+
+        tile_name = os.path.join(data_path,
+                                 str(row.country),
+                                 str(row.year),
+                                 str(row.cluster) + ".tif"
+                                 )
+
+        with rasterio.open(tile_name) as src:
+            if len(src.indexes) == 19:
+                data.append(row)
+
+    df = pd.DataFrame(data)
+    df.to_csv(output_path, index=False, sep=';')
+
 
 if __name__ == "__main__":
-    main()
+    select_landsat7("data/filtered_dataset.csv", "data", "data/filtered_dataset_landsat7.csv")

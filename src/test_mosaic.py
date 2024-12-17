@@ -31,30 +31,31 @@ def cloudless_mosaic(cluster_id, bbox, year, output_path, cloud_cover=25):
 
     items = search.item_collection()
 
-    return len(items)
+    print(items[:])
 
-    # data = ((
-    #             stackstac.stack(
-    #                 items,
-    #                 bounds_latlon=bbox,
-    #                 chunksize=4096,
-    #                 resolution=30,
-    #                 epsg=3857,
-    #             )
-    #             .where(
-    #                 lambda x: x > 0, other=np.nan
-    #             )
-    #         ))
-    #
-    # data = data.persist()
-    #
-    # median = data.median(dim="time").compute()
-    #
-    # file_name = f'{cluster_id}.tif'
-    # file_path = os.path.join(output_path, file_name)
-    # ds = median.to_dataset(dim='band')
+    data = ((
+                stackstac.stack(
+                    items,
+                    bounds_latlon=bbox,
+                    chunksize=4096,
+                    resolution=30,
+                    epsg=3857,
+                )
+                .where(
+                    lambda x: x > 0, other=np.nan
+                )
+            ))
+
+    data = data.persist()
+
+    median = data.median(dim="time").compute()
+
+    file_name = f'{cluster_id}.tif'
+    file_path = os.path.join(output_path, file_name)
+    ds = median.to_dataset(dim='band')
+    print(ds)
     # ds.transpose('band', 'y', 'x').rio.to_raster(file_path)
 
 
 if __name__ == '__main__':
-    print(cloudless_mosaic(1, (13.489, -12.395, 13.581, -12.305), 2011, 'data'))
+    print(cloudless_mosaic(292, (-10.837, 8.591, -10.747, 8.681), 2013, 'data'))
