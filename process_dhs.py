@@ -53,8 +53,9 @@ def main(folder_path, country, year, buffer):
 
     df_survey = pd.read_stata(dhs_survey, convert_categoricals=False)
     df_survey['country'] = country
-    df_survey = (df_survey[['country', 'hv007', 'hhid', 'hv001', 'hv025']]
-                 .rename(columns={'hv007': 'year',
+    df_survey = (df_survey[['country','hv006', 'hv007', 'hhid', 'hv001', 'hv025']]
+                 .rename(columns={'hv006': 'month',
+                                  'hv007': 'year',
                                   'hhid': 'HHID',
                                   'hv001': 'cluster_id',
                                   'hv025': 'urban_rural',
@@ -109,3 +110,5 @@ def main(folder_path, country, year, buffer):
 
 if __name__ == '__main__':
     buffer = 5
+    main('data/Angola', 'angola', '2011', buffer)
+
