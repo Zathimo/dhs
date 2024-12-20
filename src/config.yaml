@@ -1,0 +1,4 @@
+epsg: 3857
+time_span: 2
+cloud_cover: 25
+buffer: 5

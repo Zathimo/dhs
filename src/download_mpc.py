@@ -6,11 +6,18 @@ import os
 
 import test_mosaic
 
+import logging
+import hydra
+from omegaconf import DictConfig, OmegaConf
+
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
+log = logging.getLogger(__name__)
 
-def main():
-    csv = pd.read_csv('data/areas_of_interest.csv', sep=';')
+
+@hydra.main(version_base=None, config_path="", config_name="config")
+def main(cfg: DictConfig):
+    csv = pd.read_csv('data/areas_of_interest_month.csv', sep=';')
 
     df = convert_bbox_to_tuple(csv)
     error_log = []
@@ -30,14 +37,19 @@ def main():
 
             for cluster in df_year['cluster_id'].unique():
                 bbox = df_year[df_year['cluster_id'] == cluster]['area_of_interest'].values[0]
+                month = df_year[df_year['cluster_id'] == cluster]['month'].values[0]
                 print('cluster:', cluster, 'bbox:', bbox)
 
                 try:
-                    items = test_mosaic.cloudless_mosaic(cluster, bbox, year, output_path)
-                    df_items_year.append({'country': country, 'year': year, 'cluster_id': cluster, "items": items})
+                    items = test_mosaic.cloudless_mosaic(cluster, bbox, year, month, output_path, cfg.cloud_cover,
+                                                         cfg.time_span, cfg.epsg)
+                    df_items_year.append({'country': country, 'year': year, 'cluster_id': cluster, "items": len(items)})
                     df_items.append(df_items_year)
+                    log.info(f'Processed {country}/{year}/{cluster} with items \n {items[:]}')
                 except Exception as e:
+                    print(e)
                     error_log.append({'country': country, 'year': year, 'cluster_id': cluster, 'error': str(e)})
+                    log.error(f'Error processing {country}/{year}/{cluster}: {e}')
 
             df_items_year = pd.DataFrame(df_items_year)
             df_items_year.to_csv(f'data/{country}/{year}/items_per_cluster_1y_cloud25.csv', index=False, sep=';')
@@ -74,6 +86,7 @@ def extract_country_year_cluster(data_path, output_path):
     df = pd.DataFrame(data)
     df.to_csv(output_path, index=False, sep=';')
 
+
 def select_landsat7(dataset_csv, data_path, output_path):
     data = []
 
@@ -97,5 +110,15 @@ def select_landsat7(dataset_csv, data_path, output_path):
     df.to_csv(output_path, index=False, sep=';')
 
 
+def dataset_random_split(dataset_csv, output_path, train_ratio=0.8):
+    df = pd.read_csv(dataset_csv, sep=';')
+
+    train_df = df.sample(frac=train_ratio)
+    test_df = df.drop(train_df.index)
+
+    train_df.to_csv(output_path + '/train.csv', index=False, sep=';')
+    test_df.to_csv(output_path + '/test.csv', index=False, sep=';')
+
+
 if __name__ == "__main__":
-    select_landsat7("data/filtered_dataset.csv", "data", "data/filtered_dataset_landsat7.csv")
+    main()
