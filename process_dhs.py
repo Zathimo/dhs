@@ -8,7 +8,7 @@ import src.process_IWI as iwi
 from src.utils import area_of_interest
 import pyreadstat
 
-from src.process_IWI import read_petterson, read_sustain_bench
+from src.process_IWI import read_petterson, read_sustain_bench, get_all_aoi
 
 
 # this script takes corresponding DHS survey .DTA and .shp files as input.
@@ -20,7 +20,7 @@ from src.process_IWI import read_petterson, read_sustain_bench
 
 
 def main(folder_path, country, year, buffer):
-    output_path = os.path.join(os.getcwd(), "data", "dhs")
+    output_path = os.path.join(os.getcwd(), "data", "dhs_month")
 
     if not os.path.exists(output_path):
         print(f'creating {output_path}')
@@ -53,7 +53,7 @@ def main(folder_path, country, year, buffer):
 
     df_survey = pd.read_stata(dhs_survey, convert_categoricals=False)
     df_survey['country'] = country
-    df_survey = (df_survey[['country','hv006', 'hv007', 'hhid', 'hv001', 'hv025']]
+    df_survey = (df_survey[['country', 'hv006', 'hv007', 'hhid', 'hv001', 'hv025']]
                  .rename(columns={'hv006': 'month',
                                   'hv007': 'year',
                                   'hhid': 'HHID',
@@ -100,7 +100,7 @@ def main(folder_path, country, year, buffer):
     else:
         output = iwi.get_IWI_petterson(dhs_geo)
 
-    output_dest = os.path.join(os.getcwd(), "data", "dhs", f'{country}_{year}.csv')
+    output_dest = os.path.join(os.getcwd(), "data", "dhs_month", f'{country}_{year}.csv')
 
     output.to_csv(output_dest, index=False, sep=';')
     print('successfully processed DHS information')
@@ -108,7 +108,30 @@ def main(folder_path, country, year, buffer):
     return output
 
 
+def process_all_dhs_files(buffer=5):
+    for folder_name in os.listdir('data'):
+        folder_path = os.path.join('data', folder_name)
+        if os.path.isdir(folder_path):
+            for subfolder_name in os.listdir(folder_path):
+                try:
+                    main(folder_path, folder_name, subfolder_name, buffer)
+                except Exception as e:
+                    print(f'Error processing {folder_path}/{subfolder_name}: {e}')
+                    continue
+
+
+def build_global_data_lab_only(folder_path):
+    output = pd.DataFrame([])
+    print(output)
+    for file in os.listdir(folder_path):
+        if file.endswith('.csv'):
+            df = pd.read_csv(os.path.join(folder_path, file), sep=';')
+            output = pd.concat([output, df])
+            output = output[output['lat']!=0]
+    output.to_csv(os.path.join(folder_path, 'global_data_lab.csv'), sep=';', index=False)
+
+
+
 if __name__ == '__main__':
-    buffer = 5
-    main('data/Angola', 'angola', '2011', buffer)
+    get_all_aoi(5)
 

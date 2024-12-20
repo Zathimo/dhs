@@ -50,6 +50,8 @@ def read_sustain_bench():
 
     df.rename(columns={'urban': 'urban_rural'}, inplace=True)
 
+    df['month'] = 1
+
     df['lat'] = df['lat'].round(6)
     df['lon'] = df['lon'].round(6)
 
@@ -60,6 +62,8 @@ def read_petterson():
     df = pd.read_csv('data/dhs_clusters_rounded.csv')[['country', 'year', 'rural', 'lat', 'lon', 'iwi']]
     df.rename(columns={'rural': 'urban_rural'}, inplace=True)
     df['urban_rural'] = df['urban_rural'].map({0: 'U', 1: 'R'})
+
+    df['month'] = 1
 
     df['lat'] = df['lat'].round(6)
     df['lon'] = df['lon'].round(6)
@@ -155,13 +159,15 @@ def normalize_iwi(file_path):
 
 
 def get_all_aoi(buffer):
-    df_global = pd.read_csv('data/global_data_lab_only.csv')
+    df_global = pd.read_csv('data/global_data_lab.csv', sep=';')
     df_global['lat'] = df_global['lat'].round(6)
     df_global['lon'] = df_global['lon'].round(6)
     df_global['urban_rural'] = df_global['urban_rural'].map({1: 'U', 2: 'R'})
 
     df_petterson = read_petterson()
+    print(df_petterson)
     df_sustain = read_sustain_bench()
+    print(df_sustain)
 
     df_all = pd.concat([df_global, df_petterson, df_sustain], ignore_index=True)
 
@@ -186,12 +192,14 @@ def get_all_aoi(buffer):
             cluster_id = 0
 
     df_all['cluster_id'] = df_all['cluster_id'].astype(int)
+    df_all['month'] = df_all['month'].astype(int)
 
-    df_all.to_csv('data/areas_of_interest.csv', index=False, sep=';')
+    df_all = df_all[['country', 'year', 'month', 'cluster_id', 'urban_rural', 'lat', 'lon', 'area_of_interest']]
+    df_all = df_all[df_all['country'] != 'egypt']
+    df_all = df_all[df_all['country'] != 'morocco']
+
+    df_all.to_csv('data/areas_of_interest_month.csv', index=False, sep=';')
 
 
 if __name__ == "__main__":
-    sustain_path = '../data/sustain_bench.csv'
-    global_data_lab_path = '../data/global_data_lab_only.csv'
-    correlation_value = compute_correlation_sustain(sustain_path, global_data_lab_path)
-    print(f"Correlation value: {correlation_value}")
+    get_all_aoi(5)
