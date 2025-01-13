@@ -36,9 +36,12 @@ def main(cfg: DictConfig):
                 os.makedirs(output_path)
 
             for cluster in df_year['cluster_id'].unique():
-                bbox = df_year[df_year['cluster_id'] == cluster]['area_of_interest'].values[0]
-                month = df_year[df_year['cluster_id'] == cluster]['month'].values[0]
-                print('cluster:', cluster, 'bbox:', bbox)
+
+                if not os.path.exists(os.path.join(output_path, f'{cluster}.tif')):
+
+                    bbox = df_year[df_year['cluster_id'] == cluster]['area_of_interest'].values[0]
+                    month = df_year[df_year['cluster_id'] == cluster]['month'].values[0]
+                    print('cluster:', cluster, 'bbox:', bbox)
 
                 try:
                     items = test_mosaic.cloudless_mosaic(cluster, bbox, year, month, output_path, cfg.cloud_cover,
@@ -121,4 +124,11 @@ def dataset_random_split(dataset_csv, output_path, train_ratio=0.8):
 
 
 if __name__ == "__main__":
+    from dask.distributed import LocalCluster
+
+    cluster = LocalCluster()  # Fully-featured local Dask cluster
+    client = cluster.get_client()
+    print(cluster.dashboard_link)
     main()
+
+    cluster.close()
