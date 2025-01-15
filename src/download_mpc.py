@@ -43,27 +43,15 @@ def main(cfg: DictConfig):
                     month = df_year[df_year['cluster_id'] == cluster]['month'].values[0]
                     print('cluster:', cluster, 'bbox:', bbox)
 
-                try:
-                    items = test_mosaic.cloudless_mosaic(cluster, bbox, year, month, output_path, cfg.cloud_cover,
-                                                         cfg.time_span, cfg.epsg)
-                    df_items_year.append({'country': country, 'year': year, 'cluster_id': cluster, "items": len(items)})
-                    df_items.append(df_items_year)
-                    log.info(f'Processed {country}/{year}/{cluster} with items \n {items[:]}')
-                except Exception as e:
-                    print(e)
-                    error_log.append({'country': country, 'year': year, 'cluster_id': cluster, 'error': str(e)})
-                    log.error(f'Error processing {country}/{year}/{cluster}: {e}')
-
-            df_items_year = pd.DataFrame(df_items_year)
-            df_items_year.to_csv(f'data/{country}/{year}/items_per_cluster_1y_cloud25.csv', index=False, sep=';')
-
-    df_items_year = pd.DataFrame(df_items)
-    df_items_year.to_csv(f'data/items_per_cluster_1y_cloud25.csv', index=False, sep=';')
-
-    if error_log:
-        error_df = pd.DataFrame(error_log)
-        error_df.to_csv('data/errors.csv', index=False, sep=';')
-
+                    try:
+                        items = test_mosaic.cloudless_mosaic(cluster, bbox, year, month, output_path, cfg.cloud_cover,
+                                                             cfg.time_span, cfg.epsg)
+                        df_items_year.append({'country': country, 'year': year, 'cluster_id': cluster, "items": len(items)})
+                        df_items.append(df_items_year)
+                        log.info(f'Processed {country}/{year}/{cluster} with items \n {items[:]}')
+                    except Exception as e:
+                        print(e)
+                        log.error(f'Error processing {country}/{year}/{cluster}: {e}')
 
 def convert_bbox_to_tuple(df):
     # Convert the area_of_interest column to tuple of floats
